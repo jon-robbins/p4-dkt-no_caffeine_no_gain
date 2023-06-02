@@ -10,7 +10,7 @@ dtype = {
 }   
 
 # 데이터 경로 맞춰주세요!
-DATA_PATH = '/opt/ml/input/data/train_dataset'
+DATA_PATH = '../archive/caffeine_data/'
 train_org_df = pd.read_csv(os.path.join(DATA_PATH, "train_data_add_elapsed.csv"), dtype=dtype, parse_dates=['Timestamp'])
 train_org_df = train_org_df.sort_values(by=['userID', 'Timestamp']).reset_index(drop=True)
 test_org_df = pd.read_csv(os.path.join(DATA_PATH, "test_data_add_elapsed.csv"), dtype=dtype, parse_dates=['Timestamp'])
