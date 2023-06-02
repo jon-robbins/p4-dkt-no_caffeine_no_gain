@@ -2,13 +2,22 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-dtype = {
-    'userID': 'int16',
-    'answerCode': 'int8',
-    'KnowledgeTag': 'int16'
-}   
+# dtype = {
+#     'userID': 'int16',
+#     'answerCode': 'int8',
+#     'KnowledgeTag': 'int16'
+# }   
+dtype = { #This is added to fit our actual data
+    'userID': 'object',
+    'answerCode': 'bool',
+    'KnowledgeTag': 'object',
+    'assessmentItemID': 'object',
+    'testId': 'object'
+}
 
-DATA_PATH = '/opt/ml/input/data/train_dataset/train_data.csv'
+
+#changed data_path
+DATA_PATH = '../archive/caffeine_data/df_for_make_elapsed_train.csv'
 train_org_df = pd.read_csv(DATA_PATH, dtype=dtype, parse_dates=['Timestamp'])
 train_org_df = train_org_df.sort_values(by=['userID', 'Timestamp']).reset_index(drop=True)
 
@@ -33,7 +42,8 @@ for i in tqdm(train_df.index):
 train_df.loc[idx, "elapsed"] = -1
 train_df.loc[train_df.elapsed > 250, "elapsed"] = -1
 train_df.loc[train_df.elapsed == -1, "elapsed"] = train_df.loc[train_df.elapsed != -1, "elapsed"].mean()
-train_df.to_csv("/opt/ml/input/data/train_dataset/train_data_add_elapsed.csv", index=False)
+#changed data save location
+train_df.to_csv("../archive/caffeine_data/train_data_add_elapsed.csv", index=False)
 
 dtype = {
     'userID': 'int16',
