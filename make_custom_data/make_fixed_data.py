@@ -11,10 +11,10 @@ dtype = {
 
 # Correct the data path!
 # DATA_PATH = '../archive/caffeine_data/'
-DATA_PATH = 'archive/caffeine_data/'
-train_org_df = pd.read_csv(os.path.join(DATA_PATH, "train_data_add_elapsed.csv"), dtype=dtype, parse_dates=['Timestamp'])
+DATA_PATH = '/kaggle/working/'
+train_org_df = pd.read_csv(os.path.join(DATA_PATH, "df_train_junyi_preproc.csv"), dtype=dtype, parse_dates=['Timestamp'])
 train_org_df = train_org_df.sort_values(by=['userID', 'Timestamp']).reset_index(drop=True)
-test_org_df = pd.read_csv(os.path.join(DATA_PATH, "test_data_add_elapsed.csv"), dtype=dtype, parse_dates=['Timestamp'])
+test_org_df = pd.read_csv(os.path.join(DATA_PATH, "df_test_junyi_preproc.csv"), dtype=dtype, parse_dates=['Timestamp'])
 test_org_df = test_org_df.sort_values(by=['userID', 'Timestamp']).reset_index(drop=True)
 
 def feature_engineering(df):
