@@ -4,10 +4,10 @@ import os
 import math
 
 dtype = {
-    'userID': 'int16',
-    'answerCode': 'int8',
-    'KnowledgeTag': 'int16'
-}   
+     'userID': 'int16',
+     'answerCode': 'int8',
+     'KnowledgeTag': 'int16'
+}
 
 # Correct the data path!
 # DATA_PATH = '../archive/caffeine_data/'
@@ -149,7 +149,7 @@ def caffeine_feature(df):
     test = assess_df[assess_df['assessmentItemID'] != assess_df['assessmentItemID'].shift(-1)]
     assessment_acc = {}
     for row in test.iterrows():
-        assessment_acc[row[1][1]] = row[1]["assessment_acc"] # -에 assess_df가 있는 컬럼 인덱스
+        assessment_acc[row[1][1]] = row[1]["assessment_acc"] # Column index with assess_df in -
         
     # df['assessment_acc']  = assess_df['assessmentItemID'].map(lambda x : assessment_acc[x])
     df['assessment_acc'] = assess_df['assessmentItemID'].map(lambda x: assessment_acc.get(x, None))
@@ -189,7 +189,7 @@ def caffeine_feature(df):
 
     reversed_edu_correct_df = df.iloc[::-1].copy()
 
-    # 미래에 맞출 문제 수
+     # number of questions to fit in the future
     reversed_edu_correct_df['shift'] = reversed_edu_correct_df.groupby('userID')['answerCode'].shift().fillna(0)
     reversed_edu_correct_df['future_correct'] = reversed_edu_correct_df.groupby('userID')['shift'].cumsum()
     df = reversed_edu_correct_df.iloc[::-1]
@@ -203,15 +203,15 @@ def caffeine_feature(df):
     # number of problems solved in the past
     df['past_count'] = df.groupby('userID').cumcount()
 
-    # 과거에 맞춘 문제 수
+     # number of problems fit in the past
     df['shift'] = df.groupby('userID')['answerCode'].shift().fillna(0)
     df['past_correct'] = df.groupby('userID')['shift'].cumsum()
 
-     # past average correct answer rate
+    # past average correct answer rate
     df['average_correct'] = (df['past_correct'] / df['past_count']). fillna(0)
 
 
-     # The number of times the problem has been solved in the past
+    # The number of times the problem has been solved in the past
     df['past_content_count'] = df.groupby(['userID', 'assessmentItemID']).cumcount()
 
     # The number of times you got that problem right in the past
