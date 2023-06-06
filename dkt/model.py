@@ -11,7 +11,8 @@ import os
 from pytorch_tabnet.tab_model import TabNetClassifier
 from pytorch_tabnet.pretraining import TabNetPretrainer
 from pycaret.classification import *
-from pycaret.utils import check_metric
+# from pycaret.utils import check_metric
+from pycaret.utils.generic import check_metric # change this
 import random
 
 try:
