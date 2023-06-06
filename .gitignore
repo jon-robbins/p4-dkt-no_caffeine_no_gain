@@ -22,3 +22,4 @@ __pycache__
 # pycaret log
 *.log
 .DS_Store
+.DS_Store
