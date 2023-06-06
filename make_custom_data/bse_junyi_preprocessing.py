@@ -5,12 +5,12 @@ from sklearn.model_selection import train_test_split
 import random 
 
 
-def junyi_preprocessing(n=10_000):
-    df_problems = pd.read_csv('/Users/jon/Documents/DSDM/term_3/deep_learning_applications/final-project/deep-learning-edtech/archive/log_problem_compressed.csv.bz2', compression='bz2', nrows=10_000)
+def junyi_preprocessing(problems_csv, users_csv, content_csv):
+    df_problems = pd.read_csv(problems_csv)
     print('read problems')
-    df_users = pd.read_csv('/Users/jon/Documents/DSDM/term_3/deep_learning_applications/final-project/deep-learning-edtech/archive/Info_UserData.csv')
+    df_users = pd.read_csv(users_csv)
     print('read users')
-    df_content = pd.read_csv('/Users/jon/Documents/DSDM/term_3/deep_learning_applications/final-project/deep-learning-edtech/archive/Info_Content.csv')
+    df_content = pd.read_csv(content_csv)
     print('read content')
 
 
