@@ -28,9 +28,9 @@ def junyi_preprocessing(problems_csv, users_csv, content_csv):
     df_problems['upid_int'] = random.sample(range(100_000_000, 200_000_000 + 1), len(df_problems))
     df_content['ucid_int'] = random.sample(range(1_000, 10_000 + 1), len(df_content))
     df_users['uuid_int'] = random.sample(range(50_000, 200_000 + 1), len(df_users))
+    df_merged = pd.merge(df_problems, df_content[['ucid', 'ucid_int', 'level4_id_int']], on='ucid', how='left')
     df_merged = pd.merge(df_merged, df_content[['ucid', 'ucid_int', 'level4_id_int']], on='ucid', how='left')
-    df_merged = pd.merge(df_merged, df_content[['ucid', 'ucid_int', 'level4_id_int']], on='ucid', how='left')
-#adding this for testing
+#adding this for
     #drop unnecessary features
     to_drop =  ['problem_number','exercise_problem_repeat_session', 'total_attempt_cnt', 'used_hint_cnt', 'is_hint_used', 'is_downgrade','is_upgrade', 'level','uuid', 'ucid', 'upid']    
     print(f"cols before drop: {df_merged.columns}")
