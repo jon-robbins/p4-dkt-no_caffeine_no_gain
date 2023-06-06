@@ -10,7 +10,7 @@ def parse_args(mode='train'):
     
     parser.add_argument('--device', default='cpu', type=str, help='cpu or gpu')
 
-    parser.add_argument('--data_dir', default='/opt/ml/input/data/train_dataset', type=str, help='data directory')
+    parser.add_argument('--data_dir', default='archive/caffeine_data', type=str, help='data directory') #change directory
     parser.add_argument('--asset_dir', default='asset/', type=str, help='data directory')
     
     parser.add_argument('--train_file_name', default='add_FE_fixed_train.csv', type=str, help='train file name')

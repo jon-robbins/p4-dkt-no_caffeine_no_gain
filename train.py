@@ -9,9 +9,11 @@ import wandb
 import json
 import argparse
 
+
 def main(args):
     if args.use_wandb:
-        wandb.login()
+        api_key = os.getenv('WANDB_API_KEY') 
+        wandb.login(key=api_key)
         wandb.init(project='dkt', config=vars(args))
     
     setSeeds(42) 

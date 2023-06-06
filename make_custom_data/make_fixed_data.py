@@ -3,14 +3,23 @@ import pandas as pd
 import os
 import math
 
-dtype = {
-    'userID': 'int16',
-    'answerCode': 'int8',
-    'KnowledgeTag': 'int16'
-}   
+# dtype = {
+#     'userID': 'int16',
+#     'answerCode': 'int8',
+#     'KnowledgeTag': 'int16'
+# }   
+
+dtype = { #This is added to fit our actual data
+    'userID': 'object',
+    'answerCode': 'bool',
+    'KnowledgeTag': 'object',
+    'assessmentItemID': 'object',
+    'testId': 'object'
+}
 
 # 데이터 경로 맞춰주세요!
-DATA_PATH = '../archive/caffeine_data/'
+# DATA_PATH = '../archive/caffeine_data/'
+DATA_PATH = 'archive/caffeine_data/'
 train_org_df = pd.read_csv(os.path.join(DATA_PATH, "train_data_add_elapsed.csv"), dtype=dtype, parse_dates=['Timestamp'])
 train_org_df = train_org_df.sort_values(by=['userID', 'Timestamp']).reset_index(drop=True)
 test_org_df = pd.read_csv(os.path.join(DATA_PATH, "test_data_add_elapsed.csv"), dtype=dtype, parse_dates=['Timestamp'])
@@ -20,7 +29,10 @@ def feature_engineering(df):
 
     # 문항이 중간에 비어있는 경우를 파악 (1,2,3,,5)
     def assessmentItemID2item(x):
-        return int(x[-3:]) - 1  # 0 부터 시작하도록 
+        return int(str(x)[-3:]) - 1  # CHANGED
+        # return int(x[-3:]) - 1  # 0 부터 시작하도록 
+        # return x
+    
     df['item'] = df.assessmentItemID.map(assessmentItemID2item)
 
     item_size = df[['assessmentItemID', 'testId']].drop_duplicates().groupby('testId').size()
@@ -47,7 +59,7 @@ def feature_engineering(df):
     #유저별 시퀀스를 고려하기 위해 아래와 같이 정렬
     df.sort_values(by=['userID','Timestamp'], inplace=True)
     
-    # 유저가 푼 시험지에 대해, 유저의 전체 정답/풀이횟수/정답률 계산 (3번 풀었으면 3배)
+    # 유저가 푼 시험지에 대해, 유저의 전체 정답/풀이횟수/정답률 계산 (3번 풀었으면 3배) #keep
     df_group = df.groupby(['userID','testId'])['answerCode']
     df['user_total_correct_cnt'] = df_group.transform(lambda x: x.cumsum().shift(1))
     df['user_total_ans_cnt'] = df_group.cumcount()
@@ -93,6 +105,7 @@ def caffeine_feature(df):
     df['classification'] = df['testId'].str[2:3]
     df['paperNum'] = df['testId'].str[-3:]
     df['problemNum'] = df['assessmentItemID'].str[-3:]
+    df['Timestamp'] = df['Timestamp'].dt.tz_localize(None)
 
     df = df.astype({'Timestamp': 'datetime64[ns]', 'classification' : 'int', 'paperNum' : 'int', 'problemNum': 'int', 'assessmentItemID' : 'int'})
 
@@ -144,8 +157,10 @@ def caffeine_feature(df):
     assessment_acc = {}
     for row in test.iterrows():
         assessment_acc[row[1][1]] = row[1]["assessment_acc"] # -에 assess_df가 있는 컬럼 인덱스
-        
-    df['assessment_acc']  = assess_df['assessmentItemID'].map(lambda x : assessment_acc[x])
+    
+    # df['assessment_acc']  = assess_df['assessmentItemID'].map(lambda x : assessment_acc[x])
+    df['assessment_acc'] = assess_df['assessmentItemID'].map(lambda x: assessment_acc.get(x, None))
+
 
     test_df = df.copy()
     test_df.sort_values(by=['testId', 'Timestamp'], inplace=True)
@@ -160,9 +175,14 @@ def caffeine_feature(df):
     for row in test.iterrows():
         test_acc[row[1][2]] = row[1]["test_acc"] # -에 test_df가 있는 컬럼 인덱스
         
-    df['test_acc']  = test_df['testId'].map(lambda x : test_acc[x])
+    # df['test_acc']  = test_df['testId'].map(lambda x : test_acc[x])
+    df['test_acc'] = test_df['testId'].map(lambda x: test_acc.get(x, None))
 
-    df['time'] = pd.to_datetime(df['Timestamp']).astype(int)/ 10**17
+
+    # df['time'] = pd.to_datetime(df['Timestamp']).astype(int)/ 10**17
+    # df['time'] = df['Timestamp'].astype('int64') // 10**9
+    df['time'] = df['Timestamp'].apply(lambda x: pd.to_datetime(x).timestamp())
+
 
     # 미래 정보
     df['correct_shift_-2'] = df.groupby('userID')['answerCode'].shift(-2)
@@ -174,13 +194,13 @@ def caffeine_feature(df):
 
     df['total_used_time'] = df.groupby('userID')['time'].cumsum()
 
-    df['shift'] = df.groupby('userID')['answerCode'].shift().fillna(0)
+    df['shift'] = df.groupby('userID')['answerCode'].shift().fillna(0).astype(int) #astype added
     df['past_correct'] = df.groupby('userID')['shift'].cumsum()
 
     reversed_edu_correct_df = df.iloc[::-1].copy()
 
     # 미래에 맞출 문제 수
-    reversed_edu_correct_df['shift'] = reversed_edu_correct_df.groupby('userID')['answerCode'].shift().fillna(0)
+    reversed_edu_correct_df['shift'] = reversed_edu_correct_df.groupby('userID')['answerCode'].shift().fillna(0).astype(int) #astype added
     reversed_edu_correct_df['future_correct'] = reversed_edu_correct_df.groupby('userID')['shift'].cumsum()
     df = reversed_edu_correct_df.iloc[::-1]
 
@@ -194,7 +214,7 @@ def caffeine_feature(df):
     df['past_count'] = df.groupby('userID').cumcount()
 
     # 과거에 맞춘 문제 수
-    df['shift'] = df.groupby('userID')['answerCode'].shift().fillna(0)
+    df['shift'] = df.groupby('userID')['answerCode'].shift().fillna(0).astype(int) #astype added
     df['past_correct'] = df.groupby('userID')['shift'].cumsum()
 
     # 과거 평균 정답률
@@ -278,7 +298,8 @@ def caffeine_feature(df):
             ll.append(x)
     
     def fillna(x):
-        if math.isnan(x):
+        # if math.isnan(x):
+        if x is None or math.isnan(x):
             return 0
         return x
     
