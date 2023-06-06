@@ -13,14 +13,6 @@ def junyi_preprocessing(problems_csv, users_csv, content_csv):
     df_content = pd.read_csv(content_csv)
     print('read content')
 
-df_problems = pd.read_csv('archive/Log_Problem.csv')
-
-seed = 42069
-def junyi_preprocessing(n=10_000):
-    df_problems = df_problems.sample(frac=0.2, random_state=seed)
-    df_users = pd.read_csv('archive/Info_UserData.csv').sample(frac=0.2, random_state=seed)
-    df_content = pd.read_csv('archive/Info_Content.csv').sample(frac=0.2, random_state=seed)
-
     map_dict = {
         'uuid_int': 'userID',
         'upid_int': 'assessmentItemID',
