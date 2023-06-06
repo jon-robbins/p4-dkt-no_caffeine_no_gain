@@ -1,30 +1,40 @@
-# %%
 import pandas as pd
 import numpy as np
 import os
 from sklearn.model_selection import train_test_split
+import random 
+
 
 def junyi_preprocessing(n=10_000):
-    df_problems = pd.read_csv('../archive/log_problem_compressed.csv.bz2', compression='bz2')
-    df_users = pd.read_csv('../archive/Info_UserData.csv')
-    df_content = pd.read_csv('../archive/Info_Content.csv')
+    df_problems = pd.read_csv('/Users/jon/Documents/DSDM/term_3/deep_learning_applications/final-project/deep-learning-edtech/archive/log_problem_compressed.csv.bz2', compression='bz2', nrows=10_000)
+    print('read problems')
+    df_users = pd.read_csv('/Users/jon/Documents/DSDM/term_3/deep_learning_applications/final-project/deep-learning-edtech/archive/Info_UserData.csv')
+    print('read users')
+    df_content = pd.read_csv('/Users/jon/Documents/DSDM/term_3/deep_learning_applications/final-project/deep-learning-edtech/archive/Info_Content.csv')
+    print('read content')
 
-    #These are the equivalents of Junyi and Caffeine datasets. 
+
     map_dict = {
-        'uuid': 'userID',
-        'upid': 'assessmentItemID',
+        'uuid_int': 'userID',
+        'upid_int': 'assessmentItemID',
         'level4_id':'testId',
-        'ucid': 'KnowledgeTag',
+        'ucid_int': 'KnowledgeTag',
         'is_correct': 'answerCode',
-        'timestamp_TW': 'Timestamp'
+        'timestamp_TW': 'Timestamp',
+        'total_sec_taken': 'elapsed',
     }
 
-    df_problems_merged = pd.merge(df_problems, df_content[['ucid', 'level4_id', 'subject']], on='ucid', how='left')
-    df_problems_merged = df_problems_merged.rename(columns=map_dict)
-    to_drop =  ['problem_number','exercise_problem_repeat_session', 'total_sec_taken','total_attempt_cnt', 'used_hint_cnt', 'is_hint_used', 'is_downgrade','is_upgrade', 'level',]
-    df_problems_merged = df_problems_merged.drop(columns=to_drop)
-    df_problems_merged_sample = df_problems_merged.sample(n=n)
-    df_train, df_test = train_test_split(df_problems_merged_sample, test_size=0.1, random_state=42069)
+    #create new ID's that are only integers, then merge
+    df_problems['upid_int'] = random.sample(range(100_000_000, 200_000_000 + 1), len(df_problems))
+    df_content['ucid_int'] = random.sample(range(1_000, 10_000 + 1), len(df_content))
+    df_users['uuid_int'] = random.sample(range(50_000, 200_000 + 1), len(df_users))
+    df_merged = pd.merge(df_problems, df_users[['uuid', 'uuid_int']], on='uuid', how='left')
+    df_merged = pd.merge(df_merged, df_content[['ucid', 'ucid_int']], on='ucid', how='left')
 
-    df_train.to_csv('../archive/caffeine_data/df_train_make_elapsed.csv', index=False)
-    df_test.to_csv('../archive/caffeine_data/df_test_make_elapsed.csv', index=False)
+    #drop unnecessary features
+    to_drop =  ['problem_number','exercise_problem_repeat_session', 'total_attempt_cnt', 'used_hint_cnt', 'is_hint_used', 'is_downgrade','is_upgrade', 'level',]
+    df_merged = df_merged.drop(columns=to_drop)
+    df_merged.rename(mapper=map_dict)
+    df_train, df_test = train_test_split(df_merged, test_size=0.1, random_state=42069)
+    print('done with train test split')
+    return df_train, df_test
