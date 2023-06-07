@@ -4,14 +4,13 @@ import os
 import math
 
 dtype = {
-     'userID': 'int16',
+     #'userID': 'int32',
      'answerCode': 'int8',
      'KnowledgeTag': 'int16'
 }
 
 # Correct the data path!
-# DATA_PATH = '../archive/caffeine_data/'
-DATA_PATH = '/kaggle/working/'
+DATA_PATH = '/Users/jon/Documents/DSDM/term_3/deep_learning_applications/final-project/deep-learning-edtech/relevant_repos/p4-dkt-no_caffeine_no_gain/archive/caffeine_data'
 train_org_df = pd.read_csv(os.path.join(DATA_PATH, "df_train_junyi_preproc.csv"), dtype=dtype, parse_dates=['Timestamp'])
 train_org_df = train_org_df.sort_values(by=['userID', 'Timestamp']).reset_index(drop=True)
 test_org_df = pd.read_csv(os.path.join(DATA_PATH, "df_test_junyi_preproc.csv"), dtype=dtype, parse_dates=['Timestamp'])
@@ -41,7 +40,8 @@ def feature_engineering(df):
     def assessmentItemID2item_order(x):
         if x in shitItemID2item:
             return int(shitItemID2item[x])
-        return int(x[-3:]) - 1 # start at 0
+        # return int(x[-3:]) - 1 # start at 0
+        return int(str(x)[-3:]) - 1
     df['item_order'] = df.assessmentItemID.map(assessmentItemID2item_order)
 
 
@@ -89,7 +89,6 @@ train = train.fillna(0)
 test = test.fillna(0)
 
 def caffeine_feature(df):
-    
     # df['testId'] = df['testId'].str[1:]
     df['testId'] = df['testId'].astype(str).str[1:]
     # df['assessmentItemID'] = df['assessmentItemID'].str[1:]
@@ -137,7 +136,8 @@ def caffeine_feature(df):
     for row in test.iterrows():
         tag_acc[row[1][5]] = row[1]["knowledge_acc"] # - changes according to column index
     
-    df['tag_acc'] = tag_df['KnowledgeTag']. map(lambda x : tag_acc[x])
+    tag_acc_def_val = 0 #Adding this for preprocessing. This is the default accuracy level of a certain testId for a certain student. Here, testId = ucid, so this is the score for this problem in the past. Setting equal to 0 means that we're assuming this student has failed the question before, which isn't great but helps preprocess it for now. 
+    df['tag_acc'] = tag_df['KnowledgeTag'].map(lambda x : tag_acc.get(x, tag_acc_def_val))
 
     assess_df = df.copy()
     assess_df.sort_values(by=['assessmentItemID', 'Timestamp'], inplace=True)
