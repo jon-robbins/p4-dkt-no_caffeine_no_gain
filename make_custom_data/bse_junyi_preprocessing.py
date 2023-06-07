@@ -5,8 +5,11 @@ from sklearn.model_selection import train_test_split
 import random 
 
 
-def junyi_preprocessing(problems_csv, users_csv, content_csv):
-    df_problems = pd.read_csv(problems_csv)
+def junyi_preprocessing(problems_csv, users_csv, content_csv, nrows=0):
+    if nrows == 0:
+        df_problems = pd.read_csv(problems_csv)
+    else:
+        df_problems = pd.read_csv(problems_csv, nrows=nrows)
     print('read problems')
     df_users = pd.read_csv(users_csv)
     print('read users')
