@@ -163,6 +163,27 @@ class Preprocess:
         if self.args.model =='tabnet':
             g = main_df[columns]
             return g
+        return group.values 
+    ## This method was added from chatgpt
+    def load_data_from_df(self, main_df, sub_df=None, is_train=True):        
+        main_df = self.__feature_engineering(main_df)
+        if is_train:
+            sub_df = self.__feature_engineering(sub_df)
+            
+        if self.args.model != 'tabnet':
+            main_df = self.__preprocessing(main_df, sub_df, is_train)
+            self.args.n_embedding_layers = []
+            for val in self.args.USE_COLUMN:
+                self.args.n_embedding_layers.append(len(np.load(os.path.join(self.args.asset_dir, val+'_classes.npy'))))
+
+        main_df = main_df.sort_values(by=['userID','Timestamp'], axis=0)
+        columns = self.args.USERID_COLUMN+self.args.USE_COLUMN+self.args.ANSWER_COLUMN
+        group = main_df[columns].groupby('userID').apply(
+                self.df_apply_function
+            )
+        if self.args.model =='tabnet':
+            g = main_df[columns]
+            return g
         return group.values        
 
     def load_train_data(self, train_file, valid_file):   
